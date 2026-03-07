@@ -7,4 +7,5 @@
 
 ![Image of calculator front-end application](Artifacts/calculator_html.png) ![Image of python server console outputs](Artifacts/server_output_py.png)
 
+**Bonus:**
 - Contains a Python client-server architecture branch displaying previous ideations of the final product
