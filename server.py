@@ -1,45 +1,56 @@
-# File contains Python server what recieves and services requests
-import socket
+#Import flask libraries for Python REST Server
+from flask import Flask, request
+from flask_cors import CORS, cross_origin
 
-#create address-tuple with all interfaces, port 2000 (port 80 requires admin 'sudo' permission)
-host = ""
-port = 2001
-addr = (host, port)
+app = Flask(__name__)
+cors = CORS(app) #allow CORS for all domains on all routes
+app.config['CORS_HEADERS'] = 'Content-Type'
 
-#create socket object
-with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-    #bind
-    s.bind((host, port))
-    s.listen()
-    print(f'Server script commenced and listening on {host}:{port}')
+@app.route('/api/ping', methods=['GET'])
+@cross_origin()
+def ping():
+    #Access query params from request
+    user_id = request.args.get('user_id', default=1, type=int)
+    print(user_id)
 
-    #Wait for connection to be accepted
-    conn, addr = s.accept()
+     #Get ping data to return
+    data = {
+        'message': 'MEOWWWWW',
+        'user_id': user_id,
+        'data_source': 'example_db'
+    }
 
-    with conn:
-        print(f'Server accepted connection from {addr}')
-        while True:
-            #Perpetually recieve data from client
-            #argument specifies max # of bytes to recieve at once
-            data = conn.recv(1024)
+    return data
 
-            #Message handling switch
-            #Current client behaviour requires server send reply for every message
-            match data:
-                #Empty bytes object indicates client has disconnected
-                case b"":
-                    print(f'Client {addr} has disconnected. Terminating...')
-                    #Break exits loop; does not affect match
-                    break
-                #Inappropriate message handling
-                case b"bleh":
-                    #Inform server client will be disconnected
-                    print(f'Woah, the client {addr} just said a no-no word; time to disconnect them.')
-                    conn.send(b'You have violated our Terms of Service. Consider yourself #blocked...')
-                    conn.close()
-                    break
-                #Default cause; send message recieved
-                case _:
-                    #Send message recieved
-                    conn.send(b'0')
-                    print(f'Data recieved:\n{data}')
+@app.route('/api/calc', methods=['GET'])
+@cross_origin()
+def perform_calc():
+    #Access query params from request
+    user_id = request.args.get('user_id', default=1, type=int)
+    print(user_id)
+    calc_string = request.args.get('calc_string', default="")
+    print(calc_string)
+
+
+    data = {}
+    try:
+        result = eval(calc_string)
+        print(f'={result}')
+        #Build data to return
+        data = {
+            'result': result,
+        }
+    except Exception as e:
+        error = e
+        #JSON data with error
+        data = {
+            'result': result,
+            'error': error
+        }
+
+    return data
+
+if __name__ == 'main':
+    #Run server
+    #Can be accessed at http://127.0.0.1
+    app.run(debug=True)
